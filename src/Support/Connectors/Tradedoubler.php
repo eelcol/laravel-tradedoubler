@@ -3,6 +3,7 @@
 namespace Eelcol\LaravelTradedoubler\Support\Connectors;
 
 use Carbon\Carbon;
+use Eelcol\LaravelTradedoubler\Exceptions\TradedoublerBadCredentials;
 use Eelcol\LaravelTradedoubler\Support\Settings\TradedoublerSettings;
 use Illuminate\Support\Facades\Http;
 use function http_build_query;
@@ -67,7 +68,7 @@ class Tradedoubler
             'Authorization' => 'Bearer ' . $this->getToken()
         ])->send($method, 'https://connect.tradedoubler.com/' . $path, ['query' => $data]);
 
-        return $response->json();
+        return new TradedoublerResponse($response);
     }
 
     protected function getBearerToken($refresh = false)
@@ -85,10 +86,18 @@ class Tradedoubler
             ];
         }
 
-        $request = Http::withHeaders([
+        $request = Http::asForm()->withHeaders([
             'Content-Type' => 'application/x-www-form-urlencoded',
             'Authorization' => 'Basic ' . $this->getAuthCode()
         ])->post('https://connect.tradedoubler.com/uaa/oauth/token', $params);
+
+        if ($request->clientError()) {
+            $body = $request->json();
+            
+            if ($body['error_description'] && $body['error_description'] == 'Bad credentials') {
+                throw new TradedoublerBadCredentials("Bad credentials given");
+            }
+        }
 
         $request->throw();
 
