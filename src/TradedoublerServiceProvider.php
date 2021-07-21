@@ -27,7 +27,9 @@ class TradedoublerServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton('tradedoubler', function ($app) {
+        $this->mergeConfigFrom(__DIR__ . '/../config/tradedoubler.php', 'tradedoubler');
+
+        $this->app->bind('tradedoubler', function ($app) {
             return new Tradedoubler(config('tradedoubler'));
         });
     }
