@@ -1,0 +1,41 @@
+{
+    "name": "eelcol/laravel-tradedoubler",
+    "description": "Laravel wrapper for the TradeDoubler API",
+    "keywords": [
+        "laravel"
+    ],
+    "license": "MIT",
+    "require": {
+        "guzzlehttp/guzzle": "^7.0.1",
+        "php": "^7.4|^8.0",
+        "illuminate/support": "^7|^8",
+        "illuminate/http": "^7|^8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Eelcol\\LaravelTradedoubler\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Eelcol\\LaravelTradedoubler\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Eelcol\\LaravelTradedoubler\\TradedoublerServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require-dev": {
+        "orchestra/testbench": "^5.0",
+        "phpunit/phpunit": "^9.5",
+        "spatie/laravel-settings": "^2.0"
+    }
+}
