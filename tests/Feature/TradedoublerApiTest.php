@@ -22,6 +22,12 @@ class TradedoublerApiTest extends TestCase
     {
         $this->setConfig();
 
+        TradedoublerSettings::fake([
+            'expires_at' => now(),
+            'access_token' => '',
+            'refresh_token' => '',
+        ]);
+
         // now request transactions
         Tradedoubler::getTransactions(now());
 
@@ -42,13 +48,13 @@ class TradedoublerApiTest extends TestCase
     {
         $this->setConfig();
 
+        TradedoublerSettings::fake([
+            'expires_at' => now()->subSeconds(100),
+            'access_token' => 'token-a',
+            'refresh_token' => 'token-r',
+        ]);
+
         // now request transactions
-        Tradedoubler::getTransactions(now());
-
-        // now sleep for a few seconds
-        Carbon::setTestNow(now()->addSeconds(100));
-
-        // now request transactions again
         Tradedoubler::getTransactions(now());
 
         // a refresh token should be acquired
@@ -69,6 +75,12 @@ class TradedoublerApiTest extends TestCase
 
         $startDate = now()->subDays(7);
         $endDate = now();
+
+        TradedoublerSettings::fake([
+            'expires_at' => now()->addSeconds(100),
+            'access_token' => 'token-a',
+            'refresh_token' => 'token-r',
+        ]);
 
         // now request transactions
         Tradedoubler::getTransactions($startDate, $endDate);
@@ -92,12 +104,6 @@ class TradedoublerApiTest extends TestCase
 
         // include Spatie settings config
         Config::set('settings', File::getRequire(dirname(__FILE__) . "/../config/settings.php"));
-
-        TradedoublerSettings::fake([
-            'expires_at' => now(),
-            'access_token' => '',
-            'refresh_token' => '',
-        ]);
 
         Http::fake(function ($request) {
             if ($request->url() == 'https://connect.tradedoubler.com/uaa/oauth/token') {

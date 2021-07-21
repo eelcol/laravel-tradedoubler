@@ -54,6 +54,7 @@ class Tradedoubler
                 // generate a new bearer token
                 $this->getBearerToken();
             } else {
+                // refresh token
                 $this->refreshToken();
             }
         }
@@ -86,22 +87,18 @@ class Tradedoubler
             ];
         }
 
-        $request = Http::asForm()->withHeaders([
+        $response = Http::asForm()->withHeaders([
             'Content-Type' => 'application/x-www-form-urlencoded',
             'Authorization' => 'Basic ' . $this->getAuthCode()
         ])->post('https://connect.tradedoubler.com/uaa/oauth/token', $params);
 
-        if ($request->clientError()) {
-            $body = $request->json();
-            
-            if ($body['error_description'] && $body['error_description'] == 'Bad credentials') {
-                throw new TradedoublerBadCredentials("Bad credentials given");
-            }
+        if ($response->clientError()) {
+            $this->handleResponse($response);
         }
 
-        $request->throw();
+        $response->throw();
 
-        $json = $request->json();
+        $json = $response->json();
 
         $this->settings->access_token = $json['access_token'];
         $this->settings->refresh_token = $json['refresh_token'];
@@ -117,5 +114,21 @@ class Tradedoubler
     protected function getAuthCode()
     {
         return base64_encode($this->data['client_id'] . ":" . $this->data['client_secret']);
+    }
+
+    protected function handleResponse($response)
+    {
+        $body = $response->json();
+
+        if (is_null($body)) {
+            $body = trim($response->body());
+            if ($body == "API rate limit exceeded") {
+                throw new TradedoublerBadCredentials("API rate limit exceeded");
+            }
+        }
+
+        if (is_array($body) && $body['error_description'] && $body['error_description'] == 'Bad credentials') {
+            throw new TradedoublerBadCredentials("Bad credentials given");
+        }
     }
 }
