@@ -15,7 +15,9 @@ class TradedoublerResponse
     {
         $this->response = $response;
 
-        $this->items = collect($response->json()['items'] ?? []);
+        $this->items = collect($response->json()['items'] ?? [])->transform(function ($item) {
+            return new TradedoublerResponseItem($item);
+        });
     }
 
     public function successful()
