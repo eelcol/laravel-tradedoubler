@@ -21,10 +21,15 @@ class Tradedoubler
         $this->settings = app(TradedoublerSettings::class);
     }
 
+    /**
+     * @param Carbon $startDate
+     * @param Carbon|null $endDate the end date is NOT included in the response
+     * @return TradedoublerResponse
+     */
     public function getTransactions(Carbon $startDate, ?Carbon $endDate = null)
     {
         if (is_null($endDate)) {
-            $endDate = $startDate;
+            $endDate = $startDate->copy()->addDay();
         }
 
         return $this->request(
