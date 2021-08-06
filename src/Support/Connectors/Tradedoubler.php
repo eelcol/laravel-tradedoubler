@@ -92,6 +92,12 @@ class Tradedoubler
             'Authorization' => 'Basic ' . $this->getAuthCode()
         ])->post('https://connect.tradedoubler.com/uaa/oauth/token', $params);
 
+        if ($response->clientError() && $refresh === true) {
+            // refresh token is invalid
+            // request new bearer token
+            return $this->getBearerToken();
+        }
+
         if ($response->clientError()) {
             $this->handleResponse($response);
         }
