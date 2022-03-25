@@ -4,6 +4,7 @@ namespace Eelcol\LaravelTradedoubler\Support\Connectors;
 
 use Carbon\Carbon;
 use Eelcol\LaravelTradedoubler\Exceptions\TradedoublerBadCredentials;
+use Eelcol\LaravelTradedoubler\Exceptions\TradedoublerRateLimitExceeded;
 use Eelcol\LaravelTradedoubler\Support\Settings\TradedoublerSettings;
 use Illuminate\Support\Facades\Http;
 use function http_build_query;
@@ -127,6 +128,10 @@ class Tradedoubler
         return base64_encode($this->data['client_id'] . ":" . $this->data['client_secret']);
     }
 
+    /**
+     * @throws TradedoublerRateLimitExceeded
+     * @throws TradedoublerBadCredentials
+     */
     protected function handleResponse($response)
     {
         $body = $response->json();
@@ -134,7 +139,7 @@ class Tradedoubler
         if (is_null($body)) {
             $body = trim($response->body());
             if ($body == "API rate limit exceeded") {
-                throw new TradedoublerBadCredentials("API rate limit exceeded");
+                throw new TradedoublerRateLimitExceeded("API rate limit exceeded");
             }
         }
 
